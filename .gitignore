@@ -1,0 +1,41 @@
+# Secrets et config locale
+.env
+# Artefact local de session de travail (id de reprise) : jamais sur GitHub.
+resume
+# Config du partage Samba du corpus (chemin + utilisateur autorisé) : local
+# uniquement, JAMAIS sur GitHub.
+corpus.smb.conf
+OBJECTIFS.txt
+
+# Caches Python
+__pycache__/
+
+# Corpus de documents confidentiels (local) : JAMAIS publié sur GitHub.
+# Le dossier vit à la racine du projet, à côté des scripts. On ignore tout son
+# contenu mais on garde corpus/.gitignore versionné, pour que la protection
+# voyage avec le dossier (s'auto-protège même si ce .gitignore racine est absent).
+corpus/*
+!corpus/.gitignore
+
+# Données INDEXÉES confidentielles : JAMAIS publiées sur GitHub.
+# Elles vivent normalement dans les volumes Docker (/var/lib/docker, hors projet,
+# donc invisibles de git). Ces motifs bloquent en plus tout export/sauvegarde de
+# volume, base vectorielle ou état d'indexation déposé par erreur dans le dépôt.
+*.sqlite
+*.sqlite3
+webui.db
+chroma.sqlite3
+vector_db/
+uploads/
+.import-state.json
+# Journal des fichiers écartés à l'import : contient des noms de docs du corpus
+# confidentiel (archives), donc local uniquement, jamais sur GitHub.
+.import-skipped.log
+# Sauvegardes de volumes (cf. README « Sauvegarde »)
+*-backup.tgz
+*-backup.tar.gz
+backups/
+# Cache de l'app Open WebUI (poids du reranker bge-reranker-v2-m3, modèles
+# Hugging Face téléchargés). Non confidentiel mais lourd (centaines de Mo) :
+# n'a rien à faire dans le dépôt s'il est exporté depuis le volume Docker.
+cache/

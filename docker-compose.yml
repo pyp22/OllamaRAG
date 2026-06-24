@@ -1,0 +1,140 @@
+# Stack RAG simplifiée : Open WebUI est la SEULE interface pour interroger le
+# corpus indexé. Le wiki (Wiki.js), sa base Postgres et le pont rag-bridge ont
+# été retirés. Docling reste : l'OCR des PDF scannés est requis (import-corpus.py).
+#
+# Ollama, Open WebUI et Docling sont décrits ici et pilotés ensemble. Open WebUI
+# et Docling joignent Ollama via host.docker.internal:11434.
+name: ollamarag
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # Ollama : moteur LLM (génération + embeddings) sur la RTX 3080.
+  # Réglages orientés « exploiter le maximum du GPU » :
+  #  - FLASH_ATTENTION : attention plus rapide, KV cache plus compact.
+  #  - KV_CACHE_TYPE=q8_0 : cache contexte quantifié (~2x moins de VRAM),
+  #    autorise un num_ctx élevé sur 10 Go. Requiert Flash Attention.
+  #  - NUM_PARALLEL=2 : deux requêtes concurrentes (le 7B tient large).
+  #  - MAX_LOADED_MODELS=2 : génération + embedding bge-m3 résidents ensemble.
+  #  - KEEP_ALIVE=30m : garde le modèle chaud entre deux questions.
+  # Le modèle de génération est qwen2.5:7b (full-GPU, ~5 Go), pas le 14b qui
+  # déborde sur CPU faute de VRAM (bureau + reranker occupent déjà ~2,7 Go).
+  # ─────────────────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_FLASH_ATTENTION=1
+      - OLLAMA_KV_CACHE_TYPE=q8_0
+      - OLLAMA_NUM_PARALLEL=2
+      - OLLAMA_MAX_LOADED_MODELS=2
+      - OLLAMA_KEEP_ALIVE=30m
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    volumes:
+      - ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ─────────────────────────────────────────────────────────────
+  # Open WebUI : interface unique du RAG (corpus + retrieval + génération).
+  # Administration du corpus indexé ET interrogation en langage naturel.
+  # Exposé sur 3001.
+  # ─────────────────────────────────────────────────────────────
+  open-webui:
+    # Image « cuda » : embarque le runtime GPU pour que le reranking
+    # (bge-reranker-v2-m3) tourne sur la RTX 3080 et non sur le CPU.
+    image: ghcr.io/open-webui/open-webui:cuda
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "3001:8080"                    # interface RAG : http://<ip-hote>:3001
+    environment:
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      # --- RAG : embedding via Ollama (multilingue FR) ---
+      - RAG_EMBEDDING_ENGINE=ollama
+      - RAG_EMBEDDING_MODEL=bge-m3:latest
+      # --- Reranking local sur GPU (cohérent avec l'embedding bge-m3) ---
+      - RAG_RERANKING_MODEL=BAAI/bge-reranker-v2-m3
+      # --- Extraction documentaire + OCR via Docling ---
+      - CONTENT_EXTRACTION_ENGINE=docling
+      - DOCLING_SERVER_URL=http://docling:5001
+      # --- Comptes : 1er inscrit = admin, suivants en attente de validation ---
+      - ENABLE_SIGNUP=true
+      - DEFAULT_USER_ROLE=pending
+      # --- API activée (import par script via clé) ---
+      - ENABLE_API_KEY=true
+      # --- Accélération GPU (reranking, et tout calcul local de l'app) ---
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # Indexation massive (embeddings + gros OCR) : 1024 fd par défaut s'épuisent
+    # → « Too many open files » en joignant Ollama. On relève la limite.
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      - docling
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ─────────────────────────────────────────────────────────────
+  # Extraction de texte + OCR (PDF scannés, images)
+  # ─────────────────────────────────────────────────────────────
+  docling:
+    image: ghcr.io/docling-project/docling-serve:latest
+    container_name: docling
+    restart: unless-stopped
+    environment:
+      - DOCLING_SERVE_ENABLE_UI=true
+      # --- Accélération GPU (RTX 3080) : l'OCR des scans tourne sur la carte ---
+      # L'image embarque torch +cu130 ; il suffit de lui passer le GPU et de
+      # choisir un moteur OCR qui exploite CUDA (EasyOCR).
+      - DOCLING_SERVE_ENG_KIND=local
+      - DOCLING_PIPELINE_OCR_ENGINE=easyocr
+      - DOCLING_PIPELINE_OCR_LANG=fr,en
+      - DOCLING_DEVICE=cuda
+      - OMP_NUM_THREADS=4
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      # --- Anti-504 sur gros OCR : l'endpoint sync abandonne à 120 s par défaut ---
+      # Les gros scans (80k+ caractères) dépassent → on relève l'attente sync et
+      # le keep-alive uvicorn.
+      - DOCLING_SERVE_MAX_SYNC_WAIT=1800
+      - UVICORN_TIMEOUT_KEEP_ALIVE=1800
+    ports:
+      - "5001:5001"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  # Volumes EXTERNES : déjà créés (corpus indexé + modèles téléchargés conservés),
+  # partagés quel que soit le projet compose. external=true → ce compose les
+  # utilise sans chercher à les posséder.
+  open-webui:
+    external: true
+    name: ollamarag_open-webui
+  ollama:
+    external: true
+    name: ollamarag_ollama

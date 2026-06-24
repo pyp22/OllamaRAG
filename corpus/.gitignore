@@ -1,0 +1,6 @@
+# Ce dossier reçoit les documents confidentiels (local) à indexer (Word/Excel/PDF/TXT…).
+# Son contenu ne doit JAMAIS être poussé sur GitHub.
+# On ignore tout, sauf ce .gitignore lui-même (qui garde le dossier versionné
+# et fait voyager la protection avec le dossier, où qu'il soit publié).
+*
+!.gitignore
