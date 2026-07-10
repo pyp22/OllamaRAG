@@ -128,7 +128,7 @@ def main():
     admin = os.environ.get("ADMIN", "").strip()
     if not admin:
         die("Renommage refusé : opérateur non identifié.\n"
-            "   Déclare ton identité avant de renommer :\n"
+            "   Identité à déclarer avant de renommer :\n"
             "     export ADMIN=\"Prénom Nom\"")
 
     cid, new_name = args.renommer

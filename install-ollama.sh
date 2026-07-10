@@ -30,7 +30,7 @@ https://download.docker.com/linux/ubuntu ${UBUNTU_CODENAME:-$VERSION_CODENAME} s
   sudo apt-get update
   sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
   sudo usermod -aG docker "$USER"
-  echo "⚠  Reconnecte ta session (ou 'newgrp docker') pour utiliser docker sans sudo."
+  echo "⚠  Reconnexion de session nécessaire (ou 'newgrp docker') pour utiliser docker sans sudo."
 else
   log "Docker déjà présent : $(docker --version)"
 fi
