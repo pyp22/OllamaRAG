@@ -187,7 +187,8 @@ def file_digest(path):
 def main():
     ap = argparse.ArgumentParser(description="Importe un dossier de documents dans Open WebUI.")
     ap.add_argument("--dir", default="corpus", help="dossier des documents (défaut : corpus, à la racine du projet)")
-    ap.add_argument("--collection", default="Connaissances", help="nom de la base (défaut : Connaissances)")
+    ap.add_argument("--collection", default=os.environ.get("RAG_COLLECTION_NAME", "Connaissances"),
+                    help="nom de la base (défaut : $RAG_COLLECTION_NAME, sinon Connaissances)")
     ap.add_argument("--url", default=os.environ.get("OPENWEBUI_URL", "http://localhost:3001"),
                     help="URL d'Open WebUI (défaut : http://localhost:3001)")
     ap.add_argument("--force", action="store_true", help="réimporter même les fichiers déjà vus")

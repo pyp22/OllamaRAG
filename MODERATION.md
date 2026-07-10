@@ -62,8 +62,9 @@ aussitôt le droit d'écrire sur « Connaissances », sans perdre l'accès en le
   rôle **admin**. À n'accorder qu'à des personnes de confiance, un admin a tous
   les droits sur l'instance.
 - **Renommer une collection** est réservé aux admins (interface Open WebUI, ou
-  `gerer-collections.py`, cf. README). Sans danger pour les scripts, qui ciblent
-  la base par id (`RAG_COLLECTION_ID`).
+  `gerer-collections.py`, cf. README). Les scripts ciblent la base par nom
+  (`RAG_COLLECTION_NAME`) : après un renommage, mettre cette variable à jour dans
+  `.env` (ou renseigner `RAG_COLLECTION_ID`, prioritaire et insensible au nom).
 
 ## Outils en ligne de commande (admin uniquement)
 

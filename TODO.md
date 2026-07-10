@@ -27,18 +27,28 @@ fait, déplacer dans « Fait » avec la date.
   les crée carrément plus. À décider et appliquer.
 
 - [ ] **Reconnaissance de l'écriture cursive (manuscrite) — HTR.** L'OCR actuel
-  (Docling + EasyOCR, `DOCLING_PIPELINE_OCR_ENGINE=easyocr`) lit le texte
-  IMPRIMÉ/dactylographié mais PAS l'écriture cursive : EasyOCR est de l'OCR, pas
-  de l'HTR (Handwritten Text Recognition). Les archives Pleumeur-Bodou 1962-1965
-  contiennent des notes et comptes rendus manuscrits qui passent mal voire pas
-  du tout. Pistes 100 % local à évaluer sur une vraie page manuscrite du corpus :
+  (Docling + Tesseract, `DOCLING_PIPELINE_OCR_ENGINE=tesseract`, lang `fra`) lit
+  le texte IMPRIMÉ/dactylographié mais PAS l'écriture cursive : Tesseract est de
+  l'OCR, pas de l'HTR (Handwritten Text Recognition). Les archives
+  Pleumeur-Bodou 1962-1965 contiennent des notes et comptes rendus manuscrits qui
+  passent mal voire pas du tout. Pistes 100 % local à évaluer sur une vraie page
+  manuscrite du corpus :
     - VLM déjà installé (`llava:7b`, ou Qwen-VL) : souvent correct sur du
       manuscrit récent, sans entraînement. À benchmarker en premier (gratuit).
     - TrOCR (microsoft/trocr-*-handwritten) : HTR Hugging Face, surtout anglais.
     - Kraken / eScriptorium : HTR pensé pour les archives, entraînable sur
       l'écriture du fonds (le plus robuste mais demande du travail).
-  Action : tester EasyOCR vs un VLM sur la même page manuscrite, comparer le
+  Action : tester Tesseract vs un VLM sur la même page manuscrite, comparer le
   rendu, puis décider quoi intégrer (et où, dans la pipeline d'import).
+
+- [x] **2026-07-10 — Bascule OCR EasyOCR → Tesseract (imprimé).** Sur les scans
+  d'archives anciens, Tesseract (`fra`) donne un texte nettement plus cohérent
+  qu'EasyOCR (mots séparés, accents corrects, moins de confusions de lettres).
+  Bascule faite dans `docker-compose.yml` (pack langue `fra` monté), `ocr.sh`
+  (CPU par défaut) et `docling_ocr.py`. Au passage, correction d'un bug qui
+  neutralisait ce changement côté Docling : le paramètre API `ocr_engine` est
+  déprécié et retombait silencieusement sur `auto` (→ RapidOCR) ; le paramètre
+  effectif est `ocr_preset`, et `ocr_lang` doit être une liste.
 
 ## Fait
 

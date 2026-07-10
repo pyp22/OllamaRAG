@@ -3,9 +3,11 @@
 # D'ADMINISTRATION : renommer une collection est réservé aux ADMINS. Le script
 # emploie la clé API admin de .env.
 #
-# Cibler une collection par son ID est sûr : le renommage ne change pas l'ID, et
-# les scripts (import-corpus.py, corriger.py) ciblent la base par RAG_COLLECTION_ID
-# dans .env, donc un renommage ne casse rien.
+# Par défaut, les scripts (import-corpus.py, corriger.py) ciblent la base par NOM
+# (RAG_COLLECTION_NAME dans .env) : ce ciblage survit à une recréation de la base
+# (l'id change alors), mais PAS à un renommage → après renommage, mettre à jour
+# RAG_COLLECTION_NAME. Pour figer sur l'ID (insensible au renommage), renseigner
+# RAG_COLLECTION_ID, qui est alors prioritaire.
 #
 # Aucune dépendance externe (stdlib uniquement).
 #
@@ -138,11 +140,18 @@ def main():
     log(f"Collection renommée par {admin} : « {old_name} » → « {new_name} » (id {cid}).")
     if os.environ.get("RAG_COLLECTION_ID", "").strip() == cid:
         print("   Cette collection est celle ciblée par les scripts "
-              "(RAG_COLLECTION_ID). Ils continuent de fonctionner : ils ciblent "
-              "par id, pas par nom.")
+              "(RAG_COLLECTION_ID) : ils ciblent par id, pas par nom → ils "
+              "continuent de fonctionner sans rien changer.")
+    elif os.environ.get("RAG_COLLECTION_NAME", "").strip() == old_name:
+        print("   ⚠ Les scripts ciblent cette base par NOM (RAG_COLLECTION_NAME "
+              f"= « {old_name} »). Après ce renommage, mets à jour cette variable "
+              f"dans .env :  RAG_COLLECTION_NAME={new_name}\n"
+              "   (sinon import-corpus.py / corriger.py recréeraient une base "
+              "vide à l'ancien nom).")
     else:
-        print("   Note : si des scripts ciblent cette base par NOM, ajuste-les. "
-              "Le plus sûr est de renseigner RAG_COLLECTION_ID dans .env.")
+        print("   Note : si des scripts ciblent cette base par NOM, ajuste "
+              "RAG_COLLECTION_NAME dans .env (ou renseigne RAG_COLLECTION_ID, "
+              "prioritaire et insensible au renommage).")
 
 
 if __name__ == "__main__":

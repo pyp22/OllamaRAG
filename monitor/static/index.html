@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<!--
+  Dashboard de monitoring temps réel — stack ollamarag.
+  Histogrammes GPU / VRAM / CPU / RAM (inspiré de gpu-cpu-bar.sh) + état des
+  conteneurs. Se rafraîchit en interrogeant /api/metrics. Zéro dépendance JS.
+-->
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ollamarag · monitoring</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d;
+    --fg: #e6edf3; --dim: #8b949e;
+    --grn: #3fb950; --yel: #d29922; --red: #f85149; --cya: #39c5cf;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    padding: 1.5rem;
+  }
+  header {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border); padding-bottom: .75rem; margin-bottom: 1.25rem;
+  }
+  h1 { font-size: 1.1rem; margin: 0; color: var(--cya); letter-spacing: .04em; }
+  .sub { color: var(--dim); font-size: .82rem; }
+  .clock { margin-left: auto; color: var(--dim); font-variant-numeric: tabular-nums; }
+  .dot { display:inline-block; width:.6rem; height:.6rem; border-radius:50%; margin-right:.3rem; }
+  .dot.ok { background: var(--grn); } .dot.off { background: var(--red); }
+  .dot.stale { background: var(--yel); }
+
+  .bars {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem; margin-bottom: 1.75rem;
+  }
+  .bar {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 1rem; display: flex; flex-direction: column; align-items: center;
+  }
+  .bar .label { font-weight: 700; letter-spacing: .05em; }
+  .bar .pct { font-size: 1.7rem; font-weight: 700; font-variant-numeric: tabular-nums; margin:.15rem 0; }
+  .track {
+    width: 100%; height: 150px; background: #0a0d12; border-radius: 6px;
+    border: 1px solid var(--border); position: relative; overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+  .fill { width: 100%; transition: height .4s ease, background .4s ease; }
+  .bar .det { color: var(--dim); font-size: .78rem; margin-top: .5rem; min-height: 1.2em; text-align:center; }
+
+  h2 { font-size: .85rem; color: var(--dim); text-transform: uppercase; letter-spacing: .1em;
+       margin: 0 0 .75rem; }
+  .containers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 1rem; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 1rem;
+  }
+  .card .name { font-weight: 700; }
+  .card .metrics { display:flex; gap:1.25rem; margin-top:.6rem; color: var(--dim); font-size:.82rem; }
+  .card .metrics b { color: var(--fg); font-weight:600; }
+  footer { margin-top: 1.75rem; color: var(--dim); font-size: .78rem; }
+  .err { color: var(--red); }
+</style>
+</head>
+<body>
+  <header>
+    <h1>━━━ ollamarag · ressources ━━━</h1>
+    <span class="sub" id="host">—</span>
+    <span class="clock"><span class="dot stale" id="live-dot"></span><span id="clock">--:--:--</span></span>
+  </header>
+
+  <section class="bars" id="bars"></section>
+
+  <h2>Conteneurs de la stack</h2>
+  <section class="containers" id="containers"></section>
+
+  <footer id="footer">Connexion…</footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

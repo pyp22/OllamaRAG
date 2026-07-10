@@ -124,6 +124,9 @@ $DOCKER exec -i ollama ollama create qwen2.5:7b-rag -f - <<'MODELFILE'
 FROM qwen2.5:7b
 PARAMETER num_gpu 99
 PARAMETER num_ctx 8192
+# Qwen2.5 (entraîné majoritairement en chinois) bascule en chinois sans consigne
+# de langue explicite — surtout en RAG sur requête courte. On impose le français.
+SYSTEM """Tu es un assistant francophone. Tu réponds TOUJOURS en français, quelle que soit la langue des documents ou du contexte fournis, sauf si l'utilisateur demande explicitement une autre langue."""
 MODELFILE
 
 log "Ollama prêt : http://localhost:11434"

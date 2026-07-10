@@ -16,19 +16,24 @@ services:
   #  - NUM_PARALLEL=2 : deux requêtes concurrentes (le 7B tient large).
   #  - MAX_LOADED_MODELS=2 : génération + embedding bge-m3 résidents ensemble.
   #  - KEEP_ALIVE=30m : garde le modèle chaud entre deux questions.
-  # Le modèle de génération est qwen2.5:7b (full-GPU, ~5 Go), pas le 14b qui
-  # déborde sur CPU faute de VRAM (bureau + reranker occupent déjà ~2,7 Go).
+  # Le modèle de génération est qwen2.5:7b (full-GPU, ~5 Go). Le reranking
+  # d'Open WebUI tourne désormais sur CPU (cf. USE_CUDA_DOCKER), ce qui rend
+  # ~2,7 Go de VRAM à Ollama ; un 14b reste néanmoins juste sur 10 Go.
   # ─────────────────────────────────────────────────────────────
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
     restart: unless-stopped
     ports:
+      # Mapping sans IP → publié sur 0.0.0.0 : OUVERT AU LAN (API Ollama).
+      # Pour restreindre à la machine locale : "127.0.0.1:11434:11434".
       - "11434:11434"
     environment:
       - OLLAMA_FLASH_ATTENTION=1
       - OLLAMA_KV_CACHE_TYPE=q8_0
-      - OLLAMA_NUM_PARALLEL=2
+      # Piloté par hw-balance.sh : 1 en interrogation solo (KV cache non dupliqué),
+      # relevé si la VRAM le permet. Défaut historique : 2.
+      - OLLAMA_NUM_PARALLEL=${OLLAMA_NUM_PARALLEL:-2}
       - OLLAMA_MAX_LOADED_MODELS=2
       - OLLAMA_KEEP_ALIVE=30m
       - NVIDIA_VISIBLE_DEVICES=all
@@ -49,20 +54,27 @@ services:
   # Exposé sur 3001.
   # ─────────────────────────────────────────────────────────────
   open-webui:
-    # Image « cuda » : embarque le runtime GPU pour que le reranking
-    # (bge-reranker-v2-m3) tourne sur la RTX 3080 et non sur le CPU.
+    # Image « cuda » conservée (compatibilité), mais le reranking local tourne
+    # désormais sur CPU (USE_CUDA_DOCKER=false). Sur la RTX 3080 (10 Go), le
+    # reranker bge-reranker-v2-m3 consommait ~2,7 Go et privait Ollama de la
+    # VRAM nécessaire à ses compute buffers → cudaMalloc OOM. On rend ces
+    # ~2,7 Go à Ollama ; le reranking est plus lent mais ne sature plus le GPU.
     image: ghcr.io/open-webui/open-webui:cuda
     container_name: open-webui
     restart: unless-stopped
     ports:
+      # Mapping sans IP → publié sur 0.0.0.0 : OUVERT AU LAN.
+      # Pour restreindre à la machine locale : "127.0.0.1:3001:8080".
       - "3001:8080"                    # interface RAG : http://<ip-hote>:3001
     environment:
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       # --- RAG : embedding via Ollama (multilingue FR) ---
       - RAG_EMBEDDING_ENGINE=ollama
       - RAG_EMBEDDING_MODEL=bge-m3:latest
-      # --- Reranking local sur GPU (cohérent avec l'embedding bge-m3) ---
+      # --- Reranking local sur CPU (cohérent avec l'embedding bge-m3) ---
       - RAG_RERANKING_MODEL=BAAI/bge-reranker-v2-m3
+      # --- Force les modèles locaux (reranker) sur CPU : libère la VRAM 3080 ---
+      - USE_CUDA_DOCKER=false
       # --- Extraction documentaire + OCR via Docling ---
       - CONTENT_EXTRACTION_ENGINE=docling
       - DOCLING_SERVER_URL=http://docling:5001
@@ -71,9 +83,6 @@ services:
       - DEFAULT_USER_ROLE=pending
       # --- API activée (import par script via clé) ---
       - ENABLE_API_KEY=true
-      # --- Accélération GPU (reranking, et tout calcul local de l'app) ---
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     extra_hosts:
       - "host.docker.internal:host-gateway"
     # Indexation massive (embeddings + gros OCR) : 1024 fd par défaut s'épuisent
@@ -86,13 +95,8 @@ services:
       - open-webui:/app/backend/data
     depends_on:
       - docling
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    # Pas de réservation GPU : le reranking tourne sur CPU (cf. USE_CUDA_DOCKER).
+    # La VRAM de la 3080 est réservée à Ollama (génération + embeddings).
 
   # ─────────────────────────────────────────────────────────────
   # Extraction de texte + OCR (PDF scannés, images)
@@ -107,9 +111,17 @@ services:
       # L'image embarque torch +cu130 ; il suffit de lui passer le GPU et de
       # choisir un moteur OCR qui exploite CUDA (EasyOCR).
       - DOCLING_SERVE_ENG_KIND=local
-      - DOCLING_PIPELINE_OCR_ENGINE=easyocr
-      - DOCLING_PIPELINE_OCR_LANG=fr,en
-      - DOCLING_DEVICE=cuda
+      # Moteur OCR = Tesseract (fra). Sur les scans d'archives anciens du corpus,
+      # Tesseract bat nettement EasyOCR : il sépare les mots, gère les accents
+      # (ç, è) et confond moins les lettres (EasyOCR colle les mots → titres du
+      # type « EXPOSEGENERAL DES MBTHODES D'BRBCTION »). Même arbitrage que ocr.sh.
+      # Le pack langue fra n'est pas dans l'image (eng+osd seuls) → monté ci-dessous.
+      - DOCLING_PIPELINE_OCR_ENGINE=tesseract
+      - DOCLING_PIPELINE_OCR_LANG=fra
+      # Piloté par hw-balance.sh : cuda pendant l'OCR (import) si la VRAM est
+      # libre, cpu en interrogation pour rendre ~3,3 Go de VRAM à Ollama.
+      # Défaut historique : cuda.
+      - DOCLING_DEVICE=${DOCLING_DEVICE:-cuda}
       - OMP_NUM_THREADS=4
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
@@ -118,8 +130,52 @@ services:
       # le keep-alive uvicorn.
       - DOCLING_SERVE_MAX_SYNC_WAIT=1800
       - UVICORN_TIMEOUT_KEEP_ALIVE=1800
+    volumes:
+      # Pack langue français pour Tesseract : absent de l'image (eng+osd seuls).
+      # Monté en lecture seule dans le tessdata du conteneur (fichier seul → ne
+      # masque pas eng/osd). Modèle LSTM tessdata standard, compatible 4.1.1.
+      - ./docling/tessdata/fra.traineddata:/usr/share/tesseract/tessdata/fra.traineddata:ro
     ports:
       - "5001:5001"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ─────────────────────────────────────────────────────────────
+  # Monitoring : dashboard web temps réel des ressources (GPU/VRAM/CPU/RAM)
+  # et de l'état des conteneurs de la stack. Zéro dépendance (Python stdlib).
+  # Mêmes sources que gpu-cpu-bar.sh (nvidia-smi + /proc), en version web.
+  # Le même code tourne aussi en LANCEUR LOCAL (monitor/monitor.sh) hors Docker.
+  # Exposé sur 8770, OUVERT AU LAN par défaut (comme ollama/open-webui).
+  #
+  # Profil « monitoring » : ce service ne démarre PAS avec un simple
+  # `docker compose up -d` (réservé à ollama/open-webui/docling). Pour l'inclure :
+  #   docker compose --profile monitoring up -d
+  # (ou piloter le seul service : docker compose up -d monitor).
+  # ─────────────────────────────────────────────────────────────
+  monitor:
+    build: ./monitor
+    image: ollamarag-monitor:latest
+    container_name: monitor
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    ports:
+      # Ouvert au LAN (0.0.0.0), cohérent avec Ollama/Open WebUI. ⚠ L'endpoint
+      # n'a ni auth ni HTTPS : à réserver à un LAN de confiance. Pour restreindre
+      # à la machine locale, préfixer par "127.0.0.1:" → "127.0.0.1:8770:8770".
+      - "8770:8770"
+    environment:
+      - MONITOR_HOST=0.0.0.0             # écoute interne ; l'accès réel = mapping ports
+      - MONITOR_PORT=8770
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=utility   # nvidia-smi seul suffit (métriques)
+    volumes:
+      # Lecture seule de l'API Docker : état + stats des conteneurs de la stack.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     deploy:
       resources:
         reservations:

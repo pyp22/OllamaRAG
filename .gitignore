@@ -10,6 +10,14 @@ OBJECTIFS.txt
 # Caches Python
 __pycache__/
 
+# Sous-projet de captures vidéo du POC : local uniquement, JAMAIS commité
+# (scripts d'enregistrement + preuve réseau + vidéos produites).
+PocVideo/
+
+# Données de travail temporaires (préparation/OCR du corpus avant import) :
+# local uniquement, JAMAIS poussé sur GitHub.
+datas-temp/
+
 # Corpus de documents confidentiels (local) : JAMAIS publié sur GitHub.
 # Le dossier vit à la racine du projet, à côté des scripts. On ignore tout son
 # contenu mais on garde corpus/.gitignore versionné, pour que la protection
@@ -39,3 +47,7 @@ backups/
 # Hugging Face téléchargés). Non confidentiel mais lourd (centaines de Mo) :
 # n'a rien à faire dans le dépôt s'il est exporté depuis le volume Docker.
 cache/
+
+# Dossier de travail de présentation (PPTX de suivi du projet) : local
+# uniquement, JAMAIS publié sur GitHub.
+_Projet/
