@@ -1,0 +1,11 @@
+fra.traineddata
+
+Provenance : projet tesseract-ocr/tessdata
+https://github.com/tesseract-ocr/tessdata
+
+Licence : Apache License 2.0
+https://github.com/tesseract-ocr/tessdata/blob/main/LICENSE
+
+Fichier redistribué tel quel, non modifié. Utilisé comme pack langue
+français pour le moteur OCR Tesseract (absent de l'image Docker
+docling-serve, qui n'embarque que eng+osd).
