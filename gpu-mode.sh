@@ -19,7 +19,7 @@
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-06-24
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 set -euo pipefail
 
 cd "$(dirname "$0")"

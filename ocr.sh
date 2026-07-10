@@ -2,12 +2,12 @@
 # OCR autonome. Moteur PAR DÉFAUT : Tesseract sur les N cœurs CPU.
 #
 # Sur les scans d'archives anciens, Tesseract bat nettement EasyOCR (séparation
-# des mots, accents, moins de confusions de lettres) — d'où le défaut CPU. La file
+# des mots, accents, moins de confusions de lettres), d'où le défaut CPU. La file
 # GPU/EasyOCR (Docling, l'OCR « du projet ») reste disponible en OPT-IN pour qui
 # veut le débit GPU, et tourne alors EN MÊME TEMPS que la file CPU :
-#   • File CPU  — Tesseract sur les N cœurs (PDF rasterisés par pdftoppm, images
-#                 directes). N'occupe pas la VRAM → cohabite avec Ollama. [DÉFAUT]
-#   • File GPU  — Docling/EasyOCR CUDA (cf. docling_ocr.py). POST /v1/convert/file,
+#   • File CPU  : Tesseract sur les N cœurs (PDF rasterisés par pdftoppm, images
+#                 directes). N'occupe pas la VRAM, cohabite avec Ollama. [DÉFAUT]
+#   • File GPU  : Docling/EasyOCR CUDA (cf. docling_ocr.py). POST /v1/convert/file,
 #                 do_ocr+force_ocr. Concurrence basse car le GPU traite une image à
 #                 la fois (au-delà → 504). [OPT-IN : --gpu-jobs N | --only gpu]
 # Quand les deux files sont actives, un répartiteur leur partage le corpus →
@@ -33,7 +33,7 @@
 #   OCR_PREPROCESS       (défaut deskew ; none|deskew|sharp ; cf. --preprocess)
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 set -euo pipefail
 
 # ── Config ────────────────────────────────────────────────────────────────
@@ -284,6 +284,6 @@ ENGINES=""
 [ "$CPU_JOBS" -gt 0 ] && ENGINES="CPU/tesseract×${CPU_JOBS}"
 [ "$GPU_JOBS" -gt 0 ] && ENGINES="${ENGINES:+$ENGINES + }GPU/easyocr×${GPU_JOBS}"
 echo
-info "Temps : ${DUR} pour ${TOTAL} fichier(s) — moteurs : ${ENGINES}"
+info "Temps : ${DUR} pour ${TOTAL} fichier(s), moteurs : ${ENGINES}"
 [ "$RC" -eq 0 ] && ok "Terminé." || err "Terminé avec des erreurs."
 exit "$RC"

@@ -18,7 +18,7 @@
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-06-18
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 import argparse
 import hashlib
 import json
@@ -102,7 +102,7 @@ def die(msg, code=1):
 def api(url, path, key, method="GET", data=None, multipart=None, tolerant=False,
         on_error=None):
     """Appel JSON ou multipart à l'API d'Open WebUI. Renvoie le JSON décodé.
-    tolerant=True : sur erreur HTTP, n'arrête PAS le script — renvoie None et
+    tolerant=True : sur erreur HTTP, n'arrête PAS le script, renvoie None et
     affiche un avertissement (utilisé pour les appels par-fichier, afin qu'un
     fichier vide/illisible ne bloque pas l'import des autres).
     on_error : callable(code, detail) appelé sur erreur HTTP tolérée AVANT tout

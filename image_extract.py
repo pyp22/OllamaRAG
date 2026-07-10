@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # Extraction du CONTENU des images, tous formats confondus, pour le RAG.
 # Deux niveaux de « reconnaissance », concaténés en un texte indexable :
-#   1. OCR  — le texte présent dans l'image (Docling / Tesseract).
-#   2. VISION — une description de la scène par un modèle multimodal (llava).
+#   1. OCR    : le texte présent dans l'image (Docling / Tesseract).
+#   2. VISION : une description de la scène par un modèle multimodal (llava).
 #
 # Tout format est d'abord NORMALISÉ en PNG (ImageMagick ; dcraw en repli pour le
 # RAW), ce qui couvre JPG/PNG/TIFF/BMP/WEBP/GIF/HEIC/SVG/RAW selon les delegates
@@ -13,7 +13,7 @@
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-06-18
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 import base64
 import json
 import os

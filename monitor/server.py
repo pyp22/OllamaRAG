@@ -10,7 +10,7 @@
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-07-01
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 import argparse
 import http.client
 import json
@@ -136,7 +136,7 @@ DOCKER_SOCK = os.environ.get("DOCKER_SOCKET", "/var/run/docker.sock")
 
 
 class _UnixHTTPConnection(http.client.HTTPConnection):
-    """HTTPConnection sur socket Unix — parle à l'API Docker sans dépendance."""
+    """HTTPConnection sur socket Unix, parle à l'API Docker sans dépendance."""
 
     def __init__(self, sock_path, timeout=5):
         super().__init__("localhost", timeout=timeout)

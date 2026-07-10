@@ -5,7 +5,7 @@
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-06-18
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -125,7 +125,7 @@ FROM qwen2.5:7b
 PARAMETER num_gpu 99
 PARAMETER num_ctx 8192
 # Qwen2.5 (entraîné majoritairement en chinois) bascule en chinois sans consigne
-# de langue explicite — surtout en RAG sur requête courte. On impose le français.
+# de langue explicite, surtout en RAG sur requête courte. On impose le français.
 SYSTEM """Tu es un assistant francophone. Tu réponds TOUJOURS en français, quelle que soit la langue des documents ou du contexte fournis, sauf si l'utilisateur demande explicitement une autre langue."""
 MODELFILE
 

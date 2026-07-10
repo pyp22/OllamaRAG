@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# hw-balance.sh — répartiteur de charge matérielle de la stack OllamaRAG.
+# hw-balance.sh : répartiteur de charge matérielle de la stack OllamaRAG.
 #
 # La RTX 3080 (10 Go) est la ressource RARE ; le CPU i9-12900K (24 threads) et
 # la RAM (62 Go) sont ABONDANTS. Le déséquilibre par défaut : docling réserve
@@ -23,7 +23,7 @@
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-07-01
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -51,7 +51,7 @@ ram_free_mb()   { free -m | awk '/^Mem:/{print $7}'; }
 container_up() { $DOCKER ps --format '{{.Names}}' 2>/dev/null | grep -qx "$1"; }
 # VRAM réellement consommée par docling (0 s'il est sur CPU ou éteint).
 # On ne somme QUE les process GPU dont le PID (hôte) appartient au conteneur
-# docling — sinon on compterait la VRAM d'Ollama (même GPU) comme docling.
+# docling, sinon on compterait la VRAM d'Ollama (même GPU) comme docling.
 docling_vram_mb() {
   container_up docling || { echo 0; return 0; }
   # PID hôte de tous les process du conteneur docling.
@@ -71,7 +71,7 @@ docling_vram_mb() {
 # On ne descend au-dessous que si la place manque vraiment.
 apply_ollama() {
   local parallel="$1"
-  container_up ollama || { warn "ollama non démarré — réglage Ollama ignoré."; return 0; }
+  container_up ollama || { warn "ollama non démarré, réglage Ollama ignoré."; return 0; }
   # Réglages passés en variables d'env : on recrée le seul service ollama pour
   # les appliquer (idempotent si déjà à la bonne valeur).
   OLLAMA_NUM_PARALLEL="$parallel" \

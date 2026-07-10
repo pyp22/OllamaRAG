@@ -9,7 +9,7 @@
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-06-18
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 set -uo pipefail
 
 B=$'\033[1m'; DIM=$'\033[2m'; R=$'\033[0m'
@@ -86,7 +86,7 @@ case "${1:-}" in
     interval="${2:-2}"
     trap 'tput cnorm 2>/dev/null; echo; exit 0' INT
     tput civis 2>/dev/null
-    while true; do clear; show; echo; echo "${DIM}rafraîchi ${interval}s — Ctrl-C${R}"; sleep "$interval"; done
+    while true; do clear; show; echo; echo "${DIM}rafraîchi ${interval}s, Ctrl-C${R}"; sleep "$interval"; done
     ;;
   -h|--help)
     grep '^#' "$0" | sed 's/^# \{0,1\}//' | head -9 ;;

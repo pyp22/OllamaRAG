@@ -26,7 +26,7 @@ fait, déplacer dans « Fait » avec la date.
   `delete veto files = yes`) dans corpus.smb.conf pour que le partage Samba ne
   les crée carrément plus. À décider et appliquer.
 
-- [ ] **Reconnaissance de l'écriture cursive (manuscrite) — HTR.** L'OCR actuel
+- [ ] **Reconnaissance de l'écriture cursive (manuscrite), HTR.** L'OCR actuel
   (Docling + Tesseract, `DOCLING_PIPELINE_OCR_ENGINE=tesseract`, lang `fra`) lit
   le texte IMPRIMÉ/dactylographié mais PAS l'écriture cursive : Tesseract est de
   l'OCR, pas de l'HTR (Handwritten Text Recognition). Les archives
@@ -41,18 +41,18 @@ fait, déplacer dans « Fait » avec la date.
   Action : tester Tesseract vs un VLM sur la même page manuscrite, comparer le
   rendu, puis décider quoi intégrer (et où, dans la pipeline d'import).
 
-- [x] **2026-07-10 — Bascule OCR EasyOCR → Tesseract (imprimé).** Sur les scans
+## Fait
+
+- [x] **2026-07-10 : Bascule OCR EasyOCR → Tesseract (imprimé).** Sur les scans
   d'archives anciens, Tesseract (`fra`) donne un texte nettement plus cohérent
   qu'EasyOCR (mots séparés, accents corrects, moins de confusions de lettres).
   Bascule faite dans `docker-compose.yml` (pack langue `fra` monté), `ocr.sh`
   (CPU par défaut) et `docling_ocr.py`. Au passage, correction d'un bug qui
   neutralisait ce changement côté Docling : le paramètre API `ocr_engine` est
-  déprécié et retombait silencieusement sur `auto` (→ RapidOCR) ; le paramètre
+  déprécié et retombait silencieusement sur `auto` (RapidOCR) ; le paramètre
   effectif est `ocr_preset`, et `ocr_lang` doit être une liste.
 
-## Fait
-
-- [x] **2026-06-24 — Parasites Windows ignorés à l'import.** import-corpus.py
+- [x] **2026-06-24 : Parasites Windows ignorés à l'import.** import-corpus.py
   saute désormais SILENCIEUSEMENT Thumbs.db, desktop.ini, .DS_Store et les .jbf
   (pspbrwse.jbf), au lieu de les signaler comme « format non géré ». Les 25
   fichiers parasites déjà présents dans corpus/ ont aussi été supprimés.

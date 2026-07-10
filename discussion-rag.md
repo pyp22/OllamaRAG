@@ -1,4 +1,4 @@
-# Discussion initiale — choix d'Ollama et du RAG
+# Discussion initiale : choix d'Ollama et du RAG
 
 > Conversation de cadrage initiale ayant abouti à ce projet. Conservée pour traçabilité.
 

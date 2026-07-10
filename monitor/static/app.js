@@ -1,4 +1,4 @@
-// Monitoring temps réel ollamarag — logique client.
+// Monitoring temps réel ollamarag, logique client.
 // Interroge /api/metrics à intervalle régulier et met à jour les histogrammes.
 // Palette de couleurs alignée sur gpu-cpu-bar.sh (vert <70, jaune <90, rouge).
 

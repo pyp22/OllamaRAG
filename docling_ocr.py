@@ -4,14 +4,14 @@
 # reviennent vides. Ce module appelle Docling avec do_ocr+force_ocr pour océriser
 # les pages-images et renvoyer le texte. Moteur par défaut = Tesseract (fra) :
 # sur les scans d'archives anciens il bat nettement EasyOCR (séparation des mots,
-# accents, moins de confusions de lettres) — même arbitrage que ocr.sh.
+# accents, moins de confusions de lettres), même arbitrage que ocr.sh.
 #
 # Utilisé par import-corpus.py pour les documents ; exécutable seul pour tester :
 #   ./docling_ocr.py "corpus/1960 - Hauteurs pluviométriques.pdf"
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-06-18
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 import json
 import mimetypes
 import os
@@ -57,7 +57,7 @@ def ocr_document(path, force=True):
     Renvoie '' si Docling ne produit rien."""
     # Moteur OCR = Tesseract (fra) par défaut. Sur les scans d'archives anciens,
     # Tesseract bat nettement EasyOCR (séparation des mots, accents, moins de
-    # confusions de lettres) — même arbitrage que ocr.sh. Surchargé par les
+    # confusions de lettres), même arbitrage que ocr.sh. Surchargé par les
     # variables d'env DOCLING_PIPELINE_OCR_ENGINE / DOCLING_PIPELINE_OCR_LANG
     # (cf. docker-compose.yml, où le pack langue fra est monté dans l'image).
     # NB : « ocr_engine » est DEPRECATED côté docling-serve (ignoré, retombe sur

@@ -9,7 +9,7 @@ mais en version web rafraîchie automatiquement.
 
 ## Affichage
 
-- **Histogrammes** GPU (calcul), VRAM, CPU (calcul), RAM — couleurs
+- **Histogrammes** GPU (calcul), VRAM, CPU (calcul), RAM, couleurs
   vert / jaune / rouge (< 70 / < 90 / ≥ 90 %), comme `gpu-cpu-bar.sh`.
 - **Conteneurs** `ollama`, `open-webui`, `docling` : état (actif/arrêté) +
   conso CPU/MEM (`docker stats`).
@@ -17,12 +17,12 @@ mais en version web rafraîchie automatiquement.
 
 Le tout se rafraîchit toutes les 2 s côté navigateur (`fetch /api/metrics`).
 
-Deux façons de le lancer — **le même `server.py`** tourne dans les deux cas.
+Deux façons de le lancer : **le même `server.py`** tourne dans les deux cas.
 
 ### 1. Lanceur local (hors Docker)
 
 ```bash
-./monitor.sh                   # http://<ip-hote>:8770 — OUVERT AU LAN (0.0.0.0)
+./monitor.sh                   # http://<ip-hote>:8770, OUVERT AU LAN (0.0.0.0)
 ./monitor.sh --port 9000       # autre port
 ./monitor.sh --host 127.0.0.1  # restreindre à la machine locale
 ./monitor.sh status            # état du serveur
@@ -52,14 +52,14 @@ docker compose stop monitor                         # arrêter
 ```
 
 En conteneur, l'état des conteneurs est lu via l'**API Docker** (socket
-`/var/run/docker.sock` monté en lecture seule) — pas besoin du binaire `docker`
+`/var/run/docker.sock` monté en lecture seule), pas besoin du binaire `docker`
 dans l'image. Le GPU reste lu via `nvidia-smi` (base CUDA + runtime NVIDIA).
 Exposé sur `0.0.0.0:8770` (LAN) par défaut, comme Ollama et Open WebUI (cf. le
 mapping de ports du compose).
 
 ## Prérequis
 
-- `python3` (≥ 3.7, stdlib seule — aucun `pip install`).
+- `python3` (≥ 3.7, stdlib seule, aucun `pip install`).
 - `nvidia-smi` pour les métriques GPU (sinon GPU/VRAM affichés « n/a »).
 - `docker` (ou `sudo docker`) pour l'état des conteneurs (optionnel).
 

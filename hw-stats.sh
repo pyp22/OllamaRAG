@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Bar graph « puissance de calcul vs hardware disponible » pour la stack RAG.
-# Histogramme VERTICAL ASCII des 4 métriques clés : GPU (calcul), VRAM, CPU, RAM
-# — colonnes côte à côte, axe 0-100 %, couleurs vert/jaune/rouge selon la charge.
+# Histogramme VERTICAL ASCII des 4 métriques clés : GPU (calcul), VRAM, CPU, RAM,
+# colonnes côte à côte, axe 0-100 %, couleurs vert/jaune/rouge selon la charge.
 # Hardware ciblé : RTX 3080 (10 Go) + i9-12900K (24 threads) + 62 Go RAM.
 #
 # Usage : ./hw-stats.sh            instantané unique
@@ -10,7 +10,7 @@
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>
 # Créé le : 2026-06-18
-# Licence : CC BY-NC-SA 4.0 — https://creativecommons.org/licenses/by-nc-sa/4.0/
+# Licence : CC BY-NC-SA 4.0, https://creativecommons.org/licenses/by-nc-sa/4.0/
 set -uo pipefail
 
 # ── Couleurs ──────────────────────────────────────────────────────────────
@@ -139,7 +139,7 @@ case "${1:-}" in
     tput civis 2>/dev/null
     while true; do
       clear; show
-      echo; echo "${DIM}rafraîchi toutes les ${interval}s — Ctrl-C pour quitter${R}"
+      echo; echo "${DIM}rafraîchi toutes les ${interval}s, Ctrl-C pour quitter${R}"
       sleep "$interval"
     done
     ;;
