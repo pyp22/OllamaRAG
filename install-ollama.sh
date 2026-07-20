@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Installation d'Ollama (GPU NVIDIA) en conteneur Docker.
-# Brique de base du RAG : génération + embeddings. Indépendant du Wiki.
+# Brique de base du RAG : génération + embeddings, indépendante de la stack RAG.
 # Cible : Ubuntu/Debian, GPU NVIDIA (RTX 3080). À lancer depuis ce dossier.
 #
 # Auteur  : Pierre-Yves PARANTHOEN <nuxsfm@gmail.com>

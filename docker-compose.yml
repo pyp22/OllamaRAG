@@ -1,6 +1,5 @@
 # Stack RAG simplifiée : Open WebUI est la SEULE interface pour interroger le
-# corpus indexé. Le wiki (Wiki.js), sa base Postgres et le pont rag-bridge ont
-# été retirés. Docling reste : l'OCR des PDF scannés est requis (import-corpus.py).
+# corpus indexé. Docling reste : l'OCR des PDF scannés est requis (import-corpus.py).
 #
 # Ollama, Open WebUI et Docling sont décrits ici et pilotés ensemble. Open WebUI
 # et Docling joignent Ollama via host.docker.internal:11434.

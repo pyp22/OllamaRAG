@@ -75,7 +75,7 @@ trois scripts équivalents existent : [`ollama.sh`](ollama.sh),
 ### 2. Stack RAG : Open WebUI + Docling (par-dessus Ollama)
 
 Ollama doit tourner. Les conteneurs Open WebUI et Docling sont définis dans
-[`docker-compose.yml`](docker-compose.yml) (nom de projet fixe : `ollamarag-wiki`).
+[`docker-compose.yml`](docker-compose.yml) (nom de projet fixe : `ollamarag`).
 Depuis la racine `/mnt/DEV/OllamaRAG/` :
 
 ```bash
